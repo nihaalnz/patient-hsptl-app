@@ -1,0 +1,17 @@
+{
+    "python.pythonPath": "C:\\Users\\nihaa\\AppData\\Local\\Programs\\Python\\Python37-32\\python.exe",
+    "sqltools.connections": [
+        {
+            "connectionTimeout": 60,
+            "database": "nihaalnztrying",
+            "dialect": "MySQL",
+            "isActive": false,
+            "isConnected": false,
+            "name": "alois",
+            "password": "monkey12345",
+            "port": 3306,
+            "server": "db4free.net",
+            "username": "nihaalnz"
+        }
+    ]
+}
