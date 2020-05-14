@@ -45,8 +45,8 @@ def database():
         messagebox.showinfo('Fill all', 'All fields are necessary')
     else:
         # Establishing connection
-        con = mysql.connect(host='db4free.net', user='nihaalnz',
-                            password='monkey12345', database='nihaalnztrying')
+        con = mysql.connect(host='******', user='nihaalnz',
+                            password='*****', database='nihaalnztrying')
 
         # Making SQL command
         sql_command = "INSERT into patient_infos (`full_name`,`ph_no`,`emirate_id`,`email_addr`,`gender`,`DOB`,`nationality`,`blood_grp`,`COVID_test`,`emergency_no`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
