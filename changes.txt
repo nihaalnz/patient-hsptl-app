@@ -1,0 +1,8 @@
+-Ver 1.00
+    -Add data to database 
+    -Make Health Card
+
+-Ver 1.50
+    -Added a manage button for administration purpose.
+        -Edit, View, Search patients now available
+    
