@@ -122,8 +122,8 @@ def manage():
 
                 def edit():
                     # Establishing connection
-                    con = mysql.connect(host='db4free.net', user='nihaalnz',
-                                        password='monkey12345', database='nihaalnztrying')
+                    con = mysql.connect(host='', user='',
+                                        password='', database='')
                     # Making SQL command
                     sql_command = "UPDATE patient_infos set `full_name`=%s ,`ph_no`=%s,`emirate_id`=%s,`email_addr`=%s,`gender`=%s,`DOB`=%s,`nationality`=%s,`blood_grp`=%s,`COVID_test`=%s,`emergency_no`=%s where id = %s ;"
                     values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
