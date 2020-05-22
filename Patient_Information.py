@@ -1,16 +1,20 @@
 from tkinter import *
+import tkinter as tk
 from tkinter.font import Font
 from tkinter import messagebox
 from tkinter import filedialog
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageGrab
 from tkcalendar import Calendar
 import mysql.connector as mysql
 from tkinter import ttk
 from ttkthemes import themed_tk as tktheme
 import webbrowser
+import win32gui
+
+# Main Window
 #root = Tk()
 
-# Makign the main window
+# Makign the themed main window
 root = tktheme.ThemedTk()
 root.get_themes()
 root.set_theme('vista')
@@ -24,8 +28,7 @@ gen = ['Male', 'Female']
 bl_gr = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 cov = ['Yes', 'No', 'N/A']
 
-# Defining functions:
-
+# Defining all the functions:
 
 def database():
     # Defining Variables for db
@@ -43,10 +46,11 @@ def database():
     # Inserting into db
     if nme == "" or p_h == "" or eid == "" or ema_id == "" or nat == "" or emer == "" or gend == "" or bloo == "" or covi == "" or dat == "":
         messagebox.showinfo('Fill all', 'All fields are necessary')
+    
     else:
         # Establishing connection
-        con = mysql.connect(host='', user='nihaalnz',
-                            password='', database='nihaalnztrying')
+        con = mysql.connect(host='.net', user='',
+                            password='', database='')
 
         # Making SQL command
         sql_command = "INSERT into patient_infos (`full_name`,`ph_no`,`emirate_id`,`email_addr`,`gender`,`DOB`,`nationality`,`blood_grp`,`COVID_test`,`emergency_no`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
@@ -74,7 +78,8 @@ def database():
 def manage():
     # Creating a window
     update = Toplevel(root)
-    update.title('Select')
+    update.title('Administration')
+    update.iconbitmap('Image/icn_5.ico')
 
     # Defining screen-items and placing them
     e_i_d = ttk.Entry(update)
@@ -96,8 +101,8 @@ def manage():
 
         else:
             # Establishing connection
-            con = mysql.connect(host='db4free.net', user='nihaalnz',
-                                password='monkey12345', database='nihaalnztrying')
+            con = mysql.connect(host='', user='',
+                                password='', database='')
             # Making SQL command
             sql_command = "SELECT * from patient_infos where id = %s ;"
             c = con.cursor()
@@ -113,11 +118,12 @@ def manage():
             else:
                 manage = Toplevel(update)
                 manage.title('Manage')
+                manage.iconbitmap('Image/icn_4.ico')
 
                 def edit():
                     # Establishing connection
-                    con = mysql.connect(host='', user='nihaalnz',
-                                        password='', database='nihaalnztrying')
+                    con = mysql.connect(host='db4free.net', user='nihaalnz',
+                                        password='monkey12345', database='nihaalnztrying')
                     # Making SQL command
                     sql_command = "UPDATE patient_infos set `full_name`=%s ,`ph_no`=%s,`emirate_id`=%s,`email_addr`=%s,`gender`=%s,`DOB`=%s,`nationality`=%s,`blood_grp`=%s,`COVID_test`=%s,`emergency_no`=%s where id = %s ;"
                     values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
@@ -230,6 +236,7 @@ def manage():
         # Creating window
         sp_pat = Toplevel(update)
         sp_pat.title('Choose Patient')
+        sp_pat.iconbitmap('Image/icn_2.ico')
 
         def search():
             # Assigning variable to .get()
@@ -238,8 +245,8 @@ def manage():
             if a == 'id' or a == 'emirate_id' or a == 'email_adress' or a == 'gender' or a == 'DOB' or a == 'blood_grp' or a == 'COVID_test':
 
                 # Establishing connection
-                con = mysql.connect(host='', user='nihaalnz',
-                                    password='', database='nihaalnztrying')
+                con = mysql.connect(host='', user='',
+                                    password='', database='')
                 # Making SQL command
                 sql_command = "SELECT * FROM patient_infos where {} = %s;"
                 sql_command = sql_command.format(a)
@@ -256,6 +263,8 @@ def manage():
                     # Creating window
                     result_win = Toplevel(sp_pat)
                     result_win.title('Search result')
+                    root.iconbitmap('Image/icn_3.ico')
+
                     index = 0
                     for index, x in enumerate(records):
                         num = 0
@@ -304,8 +313,8 @@ def manage():
                 result_win.title('Search result')
 
                 # Establishing connection
-                con = mysql.connect(host='', user='nihaalnz',
-                                    password='', database='nihaalnztrying')
+                con = mysql.connect(host='', user='',
+                                    password='', database='')
                 # Making SQL command
                 sql_command = "SELECT * FROM patient_infos where {} regexp %s;"
                 sql_command = sql_command.format(a)
@@ -385,59 +394,41 @@ def manage():
         l_sch.grid(row=0, columnspan=2, sticky=E+W, padx=10, pady=10)
 
     def all_patients():
+        all_pat = Toplevel(update)
+        all_pat.iconbitmap('Image/icn_3.ico')
 
-        # Creating window
-        result_all = Toplevel(update)
-        result_all.title('Search result')
+        # setup treeview
+        columns = (('ID', 50), ("Full Name", 150), ("Ph No.", 100), ("Emirates ID", 100), ("Email Addr.", 130),
+                   ("Gender", 70), ("DOB", 100), ('Nationality', 80), ('B Grp', 60), ("COVID Test", 60), ("Emergency No.", 100))
+        tree = ttk.Treeview(all_pat, height=20, columns=[
+                            x[0] for x in columns], show='headings')
+        tree.grid(row=0, column=0, sticky='news')
 
-        # Establishing connection
-        con = mysql.connect(host='', user='nihaalnz',
-                            password='', database='nihaalnztrying')
-        # Making SQL command
-        sql_command = "SELECT * FROM patient_infos"
+        # setup columns attributes
+        for col, width in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=width, anchor=tk.CENTER)
+
+        # fetch data
+        con = mysql.connect(host='', user='',
+                            password='', database='')
         c = con.cursor()
-        # Executing and saving SQL command
-        c.execute(sql_command)
-        records = c.fetchall()
-        # Looping thru items and placing them
-        index = 0
-        for index, x in enumerate(records):
-            num = 0
-            for y in x:
-                lookup_label = Label(result_all, text=y)
-                lookup_label.grid(row=index+1, column=num)
-                num += 1
-        # Closing connection
+        c.execute('SELECT * FROM patient_infos')
+
+        # populate data to treeview
+        for rec in c:
+            tree.insert('', 'end', value=rec)
+
+        # scrollbar
+        sb = tk.Scrollbar(all_pat, orient=tk.VERTICAL, command=tree.yview)
+        sb.grid(row=0, column=1, sticky='ns')
+        tree.config(yscrollcommand=sb.set)
+        a = tree.item(tree.focus())['values']
+
+        btn = tk.Button(all_pat, text='Close',
+                        command=all_pat.destroy, fg='red')
+        btn.grid(row=1, column=0, columnspan=2, sticky=E+W)
         con.close()
-
-        # Creating column header and exit button
-        l_1 = Label(result_all, text='ID', font=font_text)
-        l_2 = Label(result_all, text='Full Name', font=font_text)
-        l_3 = Label(result_all, text='Phone no.', font=font_text)
-        l_4 = Label(result_all, text='Emirates ID', font=font_text)
-        l_5 = Label(result_all, text='Email addr.', font=font_text)
-        l_6 = Label(result_all, text='Gender', font=font_text)
-        l_7 = Label(result_all, text='DOB', font=font_text)
-        l_8 = Label(result_all, text='Nationality', font=font_text)
-        l_9 = Label(result_all, text='Blood group', font=font_text)
-        l_10 = Label(result_all, text='COVID_test', font=font_text)
-        l_11 = Label(result_all, text='Emergency no.', font=font_text)
-        btn_ext = Button(result_all, text='Exit', font=font_text,
-                         command=result_all.destroy, borderwidth=2, fg='#eb4d4b')
-
-        # Placing it in screen
-        l_1.grid(row=0, column=0, padx=20)
-        l_2.grid(row=0, column=1, padx=20)
-        l_3.grid(row=0, column=2, padx=20)
-        l_4.grid(row=0, column=3, padx=20)
-        l_5.grid(row=0, column=4, padx=20)
-        l_6.grid(row=0, column=5, padx=20)
-        l_7.grid(row=0, column=6, padx=20)
-        l_8.grid(row=0, column=7, padx=20)
-        l_9.grid(row=0, column=8, padx=20)
-        l_10.grid(row=0, column=9, padx=20)
-        l_11.grid(row=0, column=10, padx=20)
-        btn_ext.grid(row=index+2, columnspan=11, ipadx=240, sticky=E+W)
 
     # Defining buttons and placing them
     btn = ttk.Button(update, text='Edit', command=updates)
@@ -469,12 +460,40 @@ def datepicker():
 
 
 def newtop():
+    
+    def screenshots():
+        
+        #Defining base variables
+        windows_list = []
+        toplist=[]
+        
+        #Defining Position finder
+        def enum_win(hwnd,result):
+            win_text=win32gui.GetWindowText(hwnd)
+            windows_list.append((hwnd,win_text))
+            #print(hwnd,win_text)
+        win32gui.EnumWindows(enum_win, toplist)
+
+        game_hwnd = 0
+        for hwnd,win_text in windows_list:
+            if "Health Card" in win_text:
+                game_hwnd = hwnd
+
+        #Finding position of window
+        position = win32gui.GetWindowRect(game_hwnd)
+
+        #Taking screenshot and saving it
+        screenshot = ImageGrab.grab(position)
+        screenshot.save(f'Health card of {e1.get()}.png')
+        screenshot.show()
+        messagebox.showinfo('Success','Image of Health Card has been saved successfully.')
+
     global new
     global img
     global img_prof
     new = Toplevel(root)
     new.title('Health Card')
-    new.iconbitmap('image/icn_1.ico')
+    new.iconbitmap('Image/icn_1.ico')
     mainfiledir = Image.open('Image/ID Card.png')
     img = ImageTk.PhotoImage(mainfiledir)
     img_label = Label(new, image=img)
@@ -484,19 +503,21 @@ def newtop():
     img_prof = ImageTk.PhotoImage(dir)
     img_label = Label(new, image=img_prof)
     img_label.place(x=500, y=150)
+
     # Placing Labels in grid
     lo1 = Label(new, text=e1.get(), bg='white',
-                font=font_text).place(x=330, y=130)
+                font=Font(family='Times', size='14', weight='bold')).place(x=330, y=128)
     lo2 = Label(new, text=e2.get(), bg='white',
-                font=font_text).place(x=345, y=160)
+                font=Font(family='Times', size='14', weight='bold')).place(x=345, y=158)
     lo3 = Label(new, text=e3.get(), bg='white',
-                font=font_text).place(x=315, y=188)
+                font=Font(family='Times', size='14', weight='bold')).place(x=315, y=186)
     lo4 = Label(new, text=g.get(), bg='white',
-                font=font_text).place(x=163, y=229)
+                font=Font(family='Times', size='14', weight='bold')).place(x=163, y=227)
     lo5 = Label(new, text=b.get(), bg='white',
-                font=font_text).place(x=220, y=260)
+                font=Font(family='Times', size='14', weight='bold')).place(x=220, y=258)
     lo6 = Label(new, text=cal.selection_get(), bg='white',
-                font=font_text).place(x=220, y=290)
+                font=Font(family='Times', size='14', weight='bold')).place(x=220, y=288)
+    btn = ttk.Button(new,text='Save Card Image',command=screenshots).place(x=495, y=350)
 
 
 def imgpath():
@@ -534,7 +555,7 @@ def about():
     frame = LabelFrame(about, text='About this program', padx=5, pady=5)
     # Making frame items
     l_name = Label(frame, text='Created by Nihaal Nz')
-    l_ver = Label(frame, text='Ver : 1.50')
+    l_ver = Label(frame, text='Ver : 2.00')
     l_lic = Label(frame, text='Licensed under MIT')
     btn_sup = ttk.Button(frame, text='Website!', command=openweb)
     btn_cod = ttk.Button(frame, text='Source Code', command=openweb_2)
@@ -570,7 +591,9 @@ root.config(menu=my_menu)
 
 # Add menu items
 file_menu = Menu(my_menu)
-my_menu.add_cascade(label='File', menu=file_menu)
+my_menu.add_cascade(label='Menu', menu=file_menu)
+file_menu.add_command(label='Manage', command=manage)
+file_menu.add_separator()
 file_menu.add_command(label='About', command=about)
 file_menu.add_separator()
 file_menu.add_command(label='Reset', command=reset)

@@ -1,8 +1,15 @@
 -Ver 1.00
-    -Add data to database 
-    -Make Health Card
+    -Add data to database.
+    -Make Health Card.
 
 -Ver 1.50
     -Added a manage button for administration purpose.
-        -Edit, View, Search patients now available
+        -Edit, View, Search patients now available.
+
+-Ver 2.00
+    -Modified Health Card.
+        -Save Health Card Image.
+    -Added Icons for all available windows.
+    -Search all patients now made into a list.
+    
     
