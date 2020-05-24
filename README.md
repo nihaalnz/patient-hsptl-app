@@ -4,7 +4,7 @@ Github viewers
 
 FOR .EXE HOLDERS 
   -Run Patient.exe 
-  -Be patient a it might take some time to load
+  -Be patient as it might take some time to load
   -Add legitimate details only except for emirates id
   -Make sure Emirates id is 7 numbers long 
   -Make sure to use numbers only for phone number and emirates id 
