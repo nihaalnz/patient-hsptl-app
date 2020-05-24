@@ -11,5 +11,10 @@
         -Save Health Card Image.
     -Added Icons for all available windows.
     -Search all patients now made into a list.
+
+-Ver 3.00
+    -Added security for admin panel.
+    -Fixed some major and minor bugs.
+    -Better logic.
     
     
