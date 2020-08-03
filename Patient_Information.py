@@ -1,3 +1,4 @@
+# Importing modules
 from tkinter import *
 import tkinter as tk
 from tkinter.font import Font
@@ -5,18 +6,25 @@ from tkinter import messagebox
 from tkinter import filedialog
 from PIL import ImageTk, Image, ImageGrab
 from tkcalendar import Calendar
+import babel.numbers
 import mysql.connector as mysql
 from tkinter import ttk
 from ttkthemes import themed_tk as tktheme
 import webbrowser
+import pygetwindow as gw
 import win32gui
 import os
+import Pmw
+
 
 # Main Window
 #root = Tk()
 
 # Making the main themed window
 root = tktheme.ThemedTk()
+root.focus_force()
+root.resizable(False,False)
+Pmw.initialise(root)
 root.get_themes()
 root.set_theme('vista')
 root.title('Patient Information')
@@ -28,14 +36,12 @@ font_button = Font(size='10')
 # Assigning empty string for debug
 path = ""
 
-# Defining Dropdown options
+# Defining options for Dropdown
 gen = ['Male', 'Female']
 bl_gr = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 cov = ['Yes', 'No', 'N/A']
 
-# Defining all the functions:
-
-
+# Function to enter value into database
 def database():
 
     try:
@@ -53,15 +59,15 @@ def database():
 
         # Inserting into db
         if nme == "" or p_h == "" or eid == "" or ema_id == "" or nat == "" or emer == "" or gend == "" or bloo == "" or covi == "" or dat == "":
-            messagebox.showinfo('Fill all', 'All fields are necessary')
+            messagebox.showinfo('Fill all', 'All fields are necessary',parent=root)
 
         else:
             # Establishing connection
-            con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
+            con = mysql.connect(host='', user='',
+                                password='', database='')
 
             # Making SQL command
-            sql_command = "INSERT into patient_infos (`full_name`,`ph_no`,`emirate_id`,`email_addr`,`gender`,`DOB`,`nationality`,`blood_grp`,`COVID_test`,`emergency_no`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+            sql_command = "INSERT into patient_infos (`Full Name`,`Phone Number`,`Emirates ID`,`Email Address`,`Gender`,`Date of Birth`,`Nationality`,`Blood Group`,`COVID result`,`Emergency Number`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
             values = (nme, p_h, eid, ema_id, gend, str(
                 dat), nat, str(bloo), str(covi), emer)
             # Defining cursor
@@ -73,7 +79,7 @@ def database():
             con.close()
             # Success message
             messagebox.showinfo(
-                'Success', 'All values have been entered to the database')
+                'Success', 'All values have been entered to the database',parent=root)
             # Reseting all the boxes
             e1.delete(0, END)
             e2.delete(0, END)
@@ -84,62 +90,69 @@ def database():
 
     except:
         messagebox.showinfo(
-            'Fill all', 'Make sure to fil all fields including date')
+            'Fill all', 'Make sure to fil all fields including date',parent=root)
 
-
-def manage():
+# Function to get access to admin panel
+def manage(): 
+    global q_mark_new
 
     # Defining Login window
     admin = Toplevel(root)
+    admin.resizable(False,False)
     admin.title('Login')
-    admin.geometry('+550+70')
+    admin.focus_force()
+    admin.geometry('470x522+550+70')
     admin.iconbitmap('Image/icn_5.ico')
 
     # Assigning username and password
     username = 'admin'
     password = '12345'
 
-    def login(event):
+    def login(event=None):
+        global q_mark_new
 
         # If user is authentic
         if e1.get() == username and e2.get() == password:
 
             # Login successfull
-            messagebox.showinfo('Success', 'Succesfully logged in')
+            messagebox.showinfo('Success', 'Succesfully logged in',parent=admin)
             admin.destroy()
 
             # Creating a new window
             update = Toplevel(root)
+            update.resizable(False,False)
+            update.focus_force()
             update.title('Administration')
             update.geometry('+550+70')
             update.iconbitmap('Image/icn_5.ico')
 
             # Defining screen-items and placing them
             e_i_d = ttk.Entry(update)
+            e_i_d.focus_force()
             e_i_d.grid(row=1, column=1, padx=5, pady=5, ipady=5)
             l1 = ttk.Label(
-                update, text='Enter ID of Patient to be edited', font=font_text)
+                update, text='Enter ID of patient to be edited', font=font_text)
             l_head = Label(update, text='Administration Panel',
                            font=Font(size='20'))
             l1.grid(row=1, column=0, padx=5, pady=5)
             l_head.grid(row=0, columnspan=2, padx=10, sticky=E+W, pady=10)
 
-            def updates():
-
+            def updates(event=None):
+                global q_mark_new
                 # Assigning a variable for .get()
                 values = e_i_d.get()
 
                 # Defining error actions
                 if values == "":
                     messagebox.showinfo(
-                        'No value!', 'Please enter an ID in the box')
+                        'No value!', 'Please enter data in the box',parent=update)
 
                 else:
                     # Establishing connection
-                    con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                        password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
+                    con = mysql.connect(host='', user='',
+                                        password='', database='')
                     # Making SQL command
-                    sql_command = "SELECT * from patient_infos where id = %s ;"
+                    sql_command = "SELECT * from patient_infos where `Sl.no.` = %s ;"
                     c = con.cursor()
                     # Executing and saving SQL command
                     c.execute(sql_command, (values,))
@@ -148,37 +161,44 @@ def manage():
                     # Describing empty actions
                     if records == []:
                         messagebox.showinfo('Does not exist!',
-                                            'Sorry such patient does not exist')
+                                            'Sorry such patient does not exist',parent=update)
 
                     else:
                         manage = Toplevel(update)
+                        manage.resizable(False,False)
                         manage.title('Manage')
+                        manage.focus_force()
                         manage.geometry('+550+290')
                         manage.iconbitmap('Image/icn_4.ico')
 
                         def edit():
-                            # Establishing connection
-                            con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                                password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
-                            # Making SQL command
-                            sql_command = "UPDATE patient_infos set `full_name`=%s ,`ph_no`=%s,`emirate_id`=%s,`email_addr`=%s,`gender`=%s,`DOB`=%s,`nationality`=%s,`blood_grp`=%s,`COVID_test`=%s,`emergency_no`=%s where id = %s ;"
-                            values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
-                            ), e_dt.get(), e50.get(), b.get(), co.get(), e60.get(), e_i_d.get()
-                            c = con.cursor()
-                            # Executing and saving SQL command
-                            c.execute(sql_command, values)
-                            c.execute('commit')
+                            if e10.get()=='' or e20.get()=='' or e30.get()=='' or e40.get()=='' or g.get(
+                            )=='' or e_dt.get()=='' or e50.get()=='' or b.get()=='' or co.get()=='' or e60.get()=='' or e_i_d.get()=='':                          # Establishing connection
+                                
+                                messagebox.showerror('Fill all blanks','Make sure to fill all the data and leave nothing empty',parent=manage)
+                            
+                            else:
+                                con = mysql.connect(host='', user='',
+                                                    password='', database='')
+                                # Making SQL command
+                                sql_command = "UPDATE patient_infos set `Full Name`=%s ,`Phone Number`=%s,`Emirates ID`=%s,`Email Address`=%s,`Gender`=%s,`Date of Birth`=%s,`Nationality`=%s,`Blood Group`=%s,`COVID result`=%s,`Emergency Number`=%s where `Sl.no.` = %s ;"
+                                values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
+                                ), e_dt.get(), e50.get(), b.get(), co.get(), e60.get(), e_i_d.get()
+                                c = con.cursor()
+                                # Executing and saving SQL command
+                                c.execute(sql_command, values)
+                                c.execute('commit')
 
-                            # Display sucess message
-                            messagebox.showinfo(
-                                'Done', 'The data has been successfully updated.')
+                                # Display sucess message
+                                messagebox.showinfo(
+                                    'Done', 'The data has been successfully updated.',parent=manage)
 
-                            # Clearing entry box
-                            e_i_d.delete(0, END)
+                                # Clearing entry box
+                                e_i_d.delete(0, END)
 
-                            # Closing the window automatically
-                            con.close()
-                            manage.destroy()
+                                # Closing the window automatically
+                                con.close()
+                                manage.destroy()
 
                         # Defining Labels
                         l_head = Label(manage, text='Edit',
@@ -233,11 +253,11 @@ def manage():
 
                         # Placing entry boxes on screen
                         e10.grid(row=1, column=1, pady=5, ipady=5, padx=5)
-                        e20.grid(row=1, column=3, pady=5, ipady=5, padx=5)
+                        e20.grid(row=1, column=4, pady=5, ipady=5, padx=5)
                         e30.grid(row=2, column=1, pady=5, ipady=5, padx=5)
-                        e40.grid(row=2, column=3, pady=5, ipady=5, padx=5)
+                        e40.grid(row=2, column=4, pady=5, ipady=5, padx=5)
                         e50.grid(row=3, column=1, pady=6, ipady=5, padx=5)
-                        e60.grid(row=3, column=3, pady=5, ipady=5, padx=5)
+                        e60.grid(row=3, column=4, pady=5, ipady=5, padx=5)
 
                         # Inserting results on to boxes
                         for record in records:
@@ -254,217 +274,296 @@ def manage():
                         # Placing labels and dropdowns on screen
                         l_head.grid(row=0, columnspan=5, pady=10, padx=5)
                         l1.grid(row=1, column=0, pady=5, ipady=5, padx=5)
-                        l2.grid(row=1, column=2, pady=5, ipady=5, padx=5)
+                        l2.grid(row=1, column=3, pady=5, ipady=5, padx=5)
                         l3.grid(row=2, column=0, pady=5, ipady=5, padx=5)
-                        l4.grid(row=2, column=2, pady=5, ipady=5, padx=5)
+                        l4.grid(row=2, column=3, pady=5, ipady=5, padx=5)
                         l5.grid(row=3, column=0, pady=5, ipady=5, padx=5)
-                        l6.grid(row=3, column=2, pady=5, ipady=5, padx=5)
+                        l6.grid(row=3, column=3, pady=5, ipady=5, padx=5)
                         l7.grid(row=4, column=0, pady=5, ipady=5, padx=5)
-                        l8.grid(row=4, column=2, pady=5, ipady=5, padx=5)
+                        l8.grid(row=4, column=3, pady=5, ipady=5, padx=5)
                         l9.grid(row=5, column=0, pady=5, ipady=5, padx=5)
-                        l10.grid(row=5, column=2, pady=5, ipady=5, padx=5)
+                        l10.grid(row=5, column=3, pady=5, ipady=5, padx=5)
 
                         opt_g.grid(row=4, column=1, pady=5, ipadx=10, padx=5)
-                        opt_blo.grid(row=4, column=3, pady=5, ipadx=10, padx=5)
+                        opt_blo.grid(row=4, column=4, pady=5, ipadx=10, padx=5)
                         opt_cov.grid(row=5, column=1, pady=5, ipadx=10, padx=5)
-                        e_dt.grid(row=5, column=3, pady=5, ipady=5, padx=5)
-                        b_db.grid(row=7, columnspan=5, pady=(
+                        e_dt.grid(row=5, column=4, pady=5, ipady=5, padx=5)
+                        b_db.grid(row=7, columnspan=6, pady=(
                             5, 0), ipadx=10, sticky=E+W)
-                        b_cls.grid(row=8, columnspan=5, pady=(
+                        b_cls.grid(row=8, columnspan=6, pady=(
                             5, 0), ipadx=10, sticky=E+W)
                         l_wa.grid(row=6, columnspan=5, pady=5,
                                   ipady=5, padx=5, sticky=E+W)
 
+                        # Making 13 ? icons
+                        q_mark_1 = Label(manage, image=q_mark_new)
+                        q_mark_1.grid(row=1, column=2, padx=(0, 10))
+                        q_mark_2 = Label(manage, image=q_mark_new)
+                        q_mark_2.grid(row=2, column=2, padx=(0, 10))
+                        q_mark_3 = Label(manage, image=q_mark_new)
+                        q_mark_3.grid(row=3, column=2, padx=(0, 10))
+                        q_mark_4 = Label(manage, image=q_mark_new)
+                        q_mark_4.grid(row=4, column=2, padx=(0, 10))
+                        q_mark_5 = Label(manage, image=q_mark_new)
+                        q_mark_5.grid(row=5, column=2, padx=(0, 10))
+                        q_mark_6 = Label(manage, image=q_mark_new)
+                        q_mark_6.grid(row=1, column=5, padx=(0, 10),sticky=E)
+                        q_mark_7 = Label(manage, image=q_mark_new)
+                        q_mark_7.grid(row=2, column=5, padx=(0, 10),sticky=E)
+                        q_mark_8 = Label(manage, image=q_mark_new)
+                        q_mark_8.grid(row=3, column=5, padx=(0, 10),sticky=E)
+                        q_mark_9 = Label(manage, image=q_mark_new)
+                        q_mark_9.grid(row=4, column=5, padx=(0, 10))
+                        q_mark_10 = Label(manage, image=q_mark_new)
+                        q_mark_10.grid(row=5, column=5, padx=(0, 10),sticky=E)
+
+                        # Creating a tooltip for each ? icon
+                        nametooltip_1 = Pmw.Balloon(root)
+                        nametooltip_1.bind(q_mark_1, 'Name:\nEnter a valid full name')
+                        nametooltip_2 = Pmw.Balloon(root)
+                        nametooltip_2.bind(q_mark_2, 'Emirates ID:\nEnter Emirates ID less than 16 digits')
+                        nametooltip_3 = Pmw.Balloon(root)
+                        nametooltip_3.bind(q_mark_3, 'Nationality:\nEnter your nationality')
+                        nametooltip_4 = Pmw.Balloon(root)
+                        nametooltip_4.bind(q_mark_4, 'Gender:\nChoose Gender from the dropdown box')
+                        nametooltip_5 = Pmw.Balloon(root)
+                        nametooltip_5.bind(q_mark_5, 'COVID result:\nChoose a suitable option\nYes - If tested positive\nNo - If tested negative\nN/A - If hadnt done a test yet')
+                        nametooltip_6 = Pmw.Balloon(root)
+                        nametooltip_6.bind(q_mark_6, 'Phone Number:\nEnter a phone number less than 11 digits')
+                        nametooltip_7 = Pmw.Balloon(root)
+                        nametooltip_7.bind(q_mark_7, 'Email Address:\nEnter a valid email address')
+                        nametooltip_8 = Pmw.Balloon(root)
+                        nametooltip_8.bind(q_mark_8, 'Emergency Number:\nEnter a number to be contacted in cases of emergency')
+                        nametooltip_9 = Pmw.Balloon(root)
+                        nametooltip_9.bind(q_mark_9, 'Blood Group:\nChoose your blood group from the dropdown box')
+                        nametooltip_10 = Pmw.Balloon(root)
+                        nametooltip_10.bind(q_mark_10, 'Date of Birth:\nPick Date of Birth from the box ')
+
             def sp_patient():
+                global q_mark_new
 
                 # Creating window
                 sp_pat = Toplevel(update)
+                sp_pat.resizable(False,False)
                 sp_pat.title('Choose Patient')
+                sp_pat.focus_force()
                 sp_pat.geometry('+550+390')
                 sp_pat.iconbitmap('Image/icn_2.ico')
 
-                def search():
+                def search(event=None):
                     # Assigning variable to .get()
                     a = drops.get()
 
-                    if a == 'id' or a == 'emirate_id' or a == 'email_adress' or a == 'gender' or a == 'DOB' or a == 'blood_grp' or a == 'COVID_test':
-
-                        # Establishing connection
-                        con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                            password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
-                        # Making SQL command
-                        sql_command = "SELECT * FROM patient_infos where {} = %s;"
-                        sql_command = sql_command.format(a)
-                        # Executing and saving SQL command
-                        c = con.cursor()
-                        c.execute(sql_command, (e_1.get(),))
-                        records = c.fetchall()
-
-                        # Declaring null actions
-                        if records == []:
-                            messagebox.showinfo('Does not exist!',
-                                                'Sorry such patient does not exist')
-
+                    if a == 'Sl.no.' or a == 'Emirates ID' or a == 'Email Address' or a == 'Gender' or a == 'Date of Birth' or a == 'Blood Group' or a == 'COVID result':
+                        
+                        if e_1.get() == '':
+                            messagebox.showerror('Fill in the blank','Make sure to fill the blank',parent=sp_pat)
+                        
                         else:
-                            # Creating window
-                            result_win = Toplevel(sp_pat)
-                            result_win.title('Search result')
-                            result_win.geometry('+110+350')
-                            result_win.focus_get()
-                            result_win.iconbitmap('Image/icn_3.ico')
+                            # Establishing connection
+                            con = mysql.connect(host='', user='',
+                                                password='', database='')
+                            # Making SQL command
+                            sql_command = "SELECT * FROM patient_infos where `{}` = %s"
+                            sql_command = sql_command.format(a)
+                            values = (e_1.get(),)
+                            # Executing and saving SQL command
+                            c = con.cursor()
+                            c.execute(sql_command, values)
+                            records = c.fetchall()
 
-                            index = 0
-                            for index, x in enumerate(records):
-                                num = 0
-                                for y in x:
-                                    lookup_label = Label(result_win, text=y)
-                                    lookup_label.grid(row=index+1, column=num)
-                                    num += 1
-                            # Closing connection
-                            con.close()
+                            # Declaring null actions
+                            if records == []:
+                                messagebox.showinfo('Does not exist!',
+                                                    'Sorry such patient does not exist',parent=sp_pat)
+                                e_1.delete(0,END)
 
-                            # Creating column header and exit button
-                            l_1 = Label(result_win, text='ID', font=font_text)
-                            l_2 = Label(
-                                result_win, text='Full Name', font=font_text)
-                            l_3 = Label(
-                                result_win, text='Phone no.', font=font_text)
-                            l_4 = Label(
-                                result_win, text='Emirates ID', font=font_text)
-                            l_5 = Label(
-                                result_win, text='Email addr.', font=font_text)
-                            l_6 = Label(result_win, text='Gender',
-                                        font=font_text)
-                            l_7 = Label(result_win, text='DOB', font=font_text)
-                            l_8 = Label(
-                                result_win, text='Nationality', font=font_text)
-                            l_9 = Label(
-                                result_win, text='Blood group', font=font_text)
-                            l_10 = Label(
-                                result_win, text='COVID test', font=font_text)
-                            l_11 = Label(result_win, text='Emergency no.',
-                                         font=font_text)
-                            btn_ext = Button(result_win, text='Exit', font=font_text,
-                                             command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
+                            else:
+                                # Creating window
+                                result_win = Toplevel(sp_pat)
+                                result_win.resizable(False,False)
+                                result_win.title('Search result')
+                                result_win.geometry('+110+350')
+                                result_win.focus_force()
+                                result_win.iconbitmap('Image/icn_3.ico')
 
-                            # Placing it in screen
-                            l_1.grid(row=0, column=0, padx=20)
-                            l_2.grid(row=0, column=1, padx=20)
-                            l_3.grid(row=0, column=2, padx=20)
-                            l_4.grid(row=0, column=3, padx=20)
-                            l_5.grid(row=0, column=4, padx=20)
-                            l_6.grid(row=0, column=5, padx=20)
-                            l_7.grid(row=0, column=6, padx=20)
-                            l_8.grid(row=0, column=7, padx=20)
-                            l_9.grid(row=0, column=8, padx=20)
-                            l_10.grid(row=0, column=9, padx=20)
-                            l_11.grid(row=0, column=10, padx=20)
-                            btn_ext.grid(row=index+2, columnspan=11,
-                                         ipadx=240, sticky=E+W)
+                                index = 0
+                                for index, x in enumerate(records):
+                                    num = 0
+                                    for y in x:
+                                        lookup_label = Label(result_win, text=y)
+                                        lookup_label.grid(row=index+1, column=num)
+                                        num += 1
+                                # Closing connection
+                                con.close()
 
-                    elif a == 'full_name' or a == 'ph_no' or a == 'nationality' or a == 'emergency_no':
+                                # Creating column header and exit button
+                                l_1 = Label(result_win, text='ID', font=font_text)
+                                l_2 = Label(
+                                    result_win, text='Full Name', font=font_text)
+                                l_3 = Label(
+                                    result_win, text='Phone no.', font=font_text)
+                                l_4 = Label(
+                                    result_win, text='Emirates ID', font=font_text)
+                                l_5 = Label(
+                                    result_win, text='Email addr.', font=font_text)
+                                l_6 = Label(result_win, text='Gender',
+                                            font=font_text)
+                                l_7 = Label(result_win, text='DOB', font=font_text)
+                                l_8 = Label(
+                                    result_win, text='Nationality', font=font_text)
+                                l_9 = Label(
+                                    result_win, text='Blood group', font=font_text)
+                                l_10 = Label(
+                                    result_win, text='COVID test', font=font_text)
+                                l_11 = Label(result_win, text='Emergency no.',
+                                            font=font_text)
+                                btn_ext = Button(result_win, text='Exit', font=font_text,
+                                                command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
 
-                        # Establishing connection
-                        con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                            password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
-                        # Making SQL command
-                        sql_command = "SELECT * FROM patient_infos where {} regexp %s;"
-                        sql_command = sql_command.format(a)
-                        # Executing and saving SQL command
-                        c = con.cursor()
-                        c.execute(sql_command, (e_1.get(),))
-                        records = c.fetchall()
+                                # Placing it in screen
+                                l_1.grid(row=0, column=0, padx=20)
+                                l_2.grid(row=0, column=1, padx=20)
+                                l_3.grid(row=0, column=2, padx=20)
+                                l_4.grid(row=0, column=3, padx=20)
+                                l_5.grid(row=0, column=4, padx=20)
+                                l_6.grid(row=0, column=5, padx=20)
+                                l_7.grid(row=0, column=6, padx=20)
+                                l_8.grid(row=0, column=7, padx=20)
+                                l_9.grid(row=0, column=8, padx=20)
+                                l_10.grid(row=0, column=9, padx=20)
+                                l_11.grid(row=0, column=10, padx=20)
+                                btn_ext.grid(row=index+2, columnspan=11,
+                                            ipadx=240, sticky=E+W)
+                                e_1.delete(0,END)
 
-                        # Declaring null actions
-                        if records == []:
-                            messagebox.showinfo('Does not exist!',
-                                                'Sorry such patient does not exist')
+                    elif a == 'Full Name' or a == 'Phone Number' or a == 'Nationality' or a == 'Emergency Number':
 
+                        if e_1.get() == '':
+                            messagebox.showerror('Fill in the blank','Make sure to fill the blank',parent=sp_pat)
+                        
                         else:
-                            # Creating window
-                            result_win = Toplevel(sp_pat)
-                            result_win.title('Search result')
-                            result_win.geometry('+110+350')
-                            result_win.focus_get()
-                            result_win.iconbitmap('Image/icn_3.ico')
+                            
+                            # Establishing connection
+                            con = mysql.connect(host='', user='',
+                                                password='', database='')
+                            # Making SQL command
+                            sql_command = "SELECT * FROM patient_infos where `{}` regexp %s;"
+                            sql_command = sql_command.format(a)
+                            # Executing and saving SQL command
+                            c = con.cursor()
+                            c.execute(sql_command, (e_1.get(),))
+                            records = c.fetchall()
+                            
 
-                            # Looping and placing in systematic order
-                            index = 0
-                            for index, x in enumerate(records):
-                                num = 0
-                                for y in x:
-                                    lookup_label = Label(result_win, text=y)
-                                    lookup_label.grid(row=index+1, column=num)
-                                    num += 1
-                            # Closing connection
-                            con.close()
+                            # Declaring null actions
+                            if records == []:
+                                messagebox.showinfo('Does not exist!',
+                                                    'Sorry such patient does not exist',parent=sp_pat)
+                                e_1.delete(0,END)
+                            
+                            else:
+                                # Creating window
+                                result_win = Toplevel(sp_pat)
+                                result_win.resizable(False,False)
+                                result_win.title('Search result')
+                                result_win.geometry('+110+350')
+                                result_win.focus_force()
+                                result_win.iconbitmap('Image/icn_3.ico')
 
-                            # Creating column headers and exit button
-                            l_1 = Label(result_win, text='ID', font=font_text)
-                            l_2 = Label(
-                                result_win, text='Full Name', font=font_text)
-                            l_3 = Label(
-                                result_win, text='Phone no.', font=font_text)
-                            l_4 = Label(
-                                result_win, text='Emirates ID', font=font_text)
-                            l_5 = Label(
-                                result_win, text='Email addr.', font=font_text)
-                            l_6 = Label(result_win, text='Gender',
-                                        font=font_text)
-                            l_7 = Label(result_win, text='DOB', font=font_text)
-                            l_8 = Label(
-                                result_win, text='Nationality', font=font_text)
-                            l_9 = Label(
-                                result_win, text='Blood group', font=font_text)
-                            l_10 = Label(
-                                result_win, text='COVID test', font=font_text)
-                            l_11 = Label(result_win, text='Emergency no.',
-                                         font=font_text)
-                            btn_ext = Button(result_win, text='Exit', font=font_text,
-                                             command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
+                                # Looping and placing in systematic order
+                                index = 0
+                                for index, x in enumerate(records):
+                                    num = 0
+                                    for y in x:
+                                        lookup_label = Label(result_win, text=y)
+                                        lookup_label.grid(row=index+1, column=num)
+                                        num += 1
+                                # Closing connection
+                                con.close()
 
-                            # Placing it on screen
-                            l_1.grid(row=0, column=0, padx=20)
-                            l_2.grid(row=0, column=1, padx=20)
-                            l_3.grid(row=0, column=2, padx=20)
-                            l_4.grid(row=0, column=3, padx=20)
-                            l_5.grid(row=0, column=4, padx=20)
-                            l_6.grid(row=0, column=5, padx=20)
-                            l_7.grid(row=0, column=6, padx=20)
-                            l_8.grid(row=0, column=7, padx=20)
-                            l_9.grid(row=0, column=8, padx=20)
-                            l_10.grid(row=0, column=9, padx=20)
-                            l_11.grid(row=0, column=10, padx=20)
-                            btn_ext.grid(row=index+2, columnspan=11,
-                                         ipadx=240, sticky=E+W)
+                                # Creating column headers and exit button
+                                l_1 = Label(result_win, text='ID', font=font_text)
+                                l_2 = Label(
+                                    result_win, text='Full Name', font=font_text)
+                                l_3 = Label(
+                                    result_win, text='Phone no.', font=font_text)
+                                l_4 = Label(
+                                    result_win, text='Emirates ID', font=font_text)
+                                l_5 = Label(
+                                    result_win, text='Email addr.', font=font_text)
+                                l_6 = Label(result_win, text='Gender',
+                                            font=font_text)
+                                l_7 = Label(result_win, text='DOB', font=font_text)
+                                l_8 = Label(
+                                    result_win, text='Nationality', font=font_text)
+                                l_9 = Label(
+                                    result_win, text='Blood group', font=font_text)
+                                l_10 = Label(
+                                    result_win, text='COVID test', font=font_text)
+                                l_11 = Label(result_win, text='Emergency no.',
+                                            font=font_text)
+                                btn_ext = Button(result_win, text='Exit', font=font_text,
+                                                command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
+
+                                # Placing it on screen
+                                l_1.grid(row=0, column=0, padx=20)
+                                l_2.grid(row=0, column=1, padx=20)
+                                l_3.grid(row=0, column=2, padx=20)
+                                l_4.grid(row=0, column=3, padx=20)
+                                l_5.grid(row=0, column=4, padx=20)
+                                l_6.grid(row=0, column=5, padx=20)
+                                l_7.grid(row=0, column=6, padx=20)
+                                l_8.grid(row=0, column=7, padx=20)
+                                l_9.grid(row=0, column=8, padx=20)
+                                l_10.grid(row=0, column=9, padx=20)
+                                l_11.grid(row=0, column=10, padx=20)
+                                btn_ext.grid(row=index+2, columnspan=11,
+                                            ipadx=240, sticky=E+W)
+                                e_1.delete(0,END)
 
                     else:
                         # Error message
                         messagebox.showinfo(
-                            'No choice given', 'Please choose a valid option to search by...')
+                            'No choice given', 'Please choose a valid option to search by...',parent=sp_pat)
 
                 # Defining dropdown and entry box
-                drops = ttk.Combobox(sp_pat, value=['Search by...', 'id', 'full_name', 'ph_no', 'emirate_id', 'email_addr',
-                                                    'gender', 'DOB', 'nationality', 'blood_grp', 'COVID_test', 'emergency_no'], state='readonly')
+                drops = ttk.Combobox(sp_pat, value=['Search by...', 'Sl.no.', 'Full Name', 'Phone Number', 'Emirates ID', 'Email Address',
+                                                    'Gender', 'Date of Birth', 'Nationality', 'Blood Group', 'COVID result', 'Emergency Number'], state='readonly')
                 drops.current(0)
                 e_1 = Entry(sp_pat)
+                e_1.focus_force()
 
                 # Defining Labels and search button
                 l_sch = Label(sp_pat, text='Search', font=Font(size='20'))
                 l_id = Label(sp_pat, text='Enter', font=font_text)
-                bt_db = Button(sp_pat, text='Search', command=search)
+                bt_db = ttk.Button(sp_pat, text='Search', command=search)
 
                 # Placing it in screen
                 drops.grid(row=1, columnspan=3, ipady=5, padx=5, pady=10)
                 e_1.grid(row=2, column=1, ipady=5, padx=5, pady=5)
                 l_id.grid(row=2, column=0, padx=5, pady=5)
-                bt_db.grid(row=3, columnspan=2, padx=5, pady=5, sticky=E+W)
-                l_sch.grid(row=0, columnspan=2, sticky=E+W, padx=10, pady=10)
+                bt_db.grid(row=3, columnspan=3, pady=(10,0), sticky=E+W)
+                l_sch.grid(row=0, columnspan=2, sticky=E+W, padx=100, pady=10)
+                e_1.bind('<Return>',search)
+
+                # Making 13 ? icons
+                q_mark_1 = Label(sp_pat, image=q_mark_new)
+                q_mark_2 = Label(sp_pat, image=q_mark_new)
+                q_mark_1.grid(row=1, column=2, padx=(0, 10))
+                q_mark_2.grid(row=2, column=2, padx=(0, 10))
+
+                nametooltip_1 = Pmw.Balloon(root)
+                nametooltip_2 = Pmw.Balloon(root)
+                nametooltip_1.bind(q_mark_1, 'Search by:\nChoose an option to search by..')
+                nametooltip_2.bind(q_mark_2, 'Enter:\nEnter the corresponding information')
 
             def all_patients():
 
                 # Making a new window
                 all_pat = Toplevel(update)
+                all_pat.resizable(False,False)
+                all_pat.focus_force()
                 all_pat.iconbitmap('Image/icn_3.ico')
                 all_pat.geometry('+110+70')
 
@@ -481,8 +580,8 @@ def manage():
                     tree.column(col, width=width, anchor=tk.CENTER)
 
                 # fetch data
-                con = mysql.connect(host=os.environ.get('DB_HOST'), user=os.environ.get('DB_USER'),
-                                    password=os.environ.get('DB_PASS'), database=os.environ.get('DB'))
+                con = mysql.connect(host='', user='',
+                                    password='', database='')
                 c = con.cursor()
                 c.execute('SELECT * FROM patient_infos')
 
@@ -509,14 +608,22 @@ def manage():
             btn_all = ttk.Button(update, text='View all Patients',
                                  command=all_patients)
             btn_ext = ttk.Button(update, text='Close', command=update.destroy)
-            btn_sp.grid(row=3, columnspan=2, sticky=E+W, pady=(10, 0))
-            btn.grid(row=2, columnspan=2, sticky=E+W, pady=(10, 0))
-            btn_all.grid(row=4, columnspan=2, sticky=E+W)
-            btn_ext.grid(row=5, columnspan=2, sticky=E+W, pady=(10, 0))
+            btn_sp.grid(row=3, columnspan=3, sticky=E+W, pady=(10, 0))
+            btn.grid(row=2, columnspan=3, sticky=E+W, pady=(10, 0))
+            btn_all.grid(row=4, columnspan=3, sticky=E+W)
+            btn_ext.grid(row=5, columnspan=3, sticky=E+W, pady=(10, 0))
+            e_i_d.bind('<Return>',updates)
+
+            # Making 1 ? icons
+            q_mark_1 = Label(update, image=q_mark_new)
+            q_mark_1.grid(row=1, column=2, padx=(0, 10))
+
+            nametooltip_1 = Pmw.Balloon(root)
+            nametooltip_1.bind(q_mark_1, 'Enter Sl.No:\nEnter the Sl.no. of the patient needed to be edited')
 
         else:
             messagebox.showerror(
-                'Incorrect', 'Incorrect credentials, please try again')
+                'Incorrect', 'Incorrect credentials, please try again',parent=admin)
 
     # Defining lables and buttons and entry widgets
     l = Label(admin, text='Login', font=Font(
@@ -531,75 +638,75 @@ def manage():
 
     # Placing buttons and labels and entry widgets and keybinding
     b.bind("<Return>", login)
-    l.grid(column=0, row=0, padx=150, pady=(120, 15))
-    l2.grid(column=0, row=1)
-    l3.grid(column=0, row=3)
-    e1.grid(column=0, row=2, ipady=5)
-    e2.grid(column=0, row=4, ipady=5)
-    b.grid(row=5, column=0, pady=(15, 150), ipady=5, ipadx=35)
+    e2.bind("<Return>", login)
+    e1.focus_force()
+    l.grid(column=0, row=0, padx=(150,0), pady=(120, 15))
+    l2.grid(column=0, row=1,columnspan=2)
+    l3.grid(column=0, row=3,columnspan=2)
+    e1.grid(column=0, row=2, ipady=5,padx=(150,0))
+    e2.grid(column=0, row=4, ipady=5,padx=(150,0))
+    b.grid(row=5, column=0, pady=(15,150), ipady=5, ipadx=35,columnspan=2)
 
+    # Making 13 ? icons
+    q_mark_1 = Label(admin, image=q_mark_new)
+    q_mark_2 = Label(admin, image=q_mark_new)
+    q_mark_1.grid(row=2, column=1, padx=(5, 130))
+    q_mark_2.grid(row=4, column=1, padx=(5, 130))
 
+    nametooltip_1 = Pmw.Balloon(root)
+    nametooltip_2 = Pmw.Balloon(root)
+    nametooltip_1.bind(q_mark_1, 'Username:\nEnter the given username')
+    nametooltip_2.bind(q_mark_2, 'Password:\nEnter the given correct password')
+
+# Function to get date of birth
 def datepicker():
     global cal
-    global a
-
-    def date():
-        global cal
-        a = cal.selection_get()
-
     top = Toplevel(root)
+    top.resizable(False,False)
+    top.focus_force()
     top.title('Choose Date')
+    top.geometry('+550+70')
     cal = Calendar(top, font="Arial 14", selectmode='day',
-                   year=2006, month=1, day=1)
+                   year=2006, month=9, day=1)
     cal.pack(fill="both", expand=True)
     Button(top, text="OK", command=top.destroy,
            font=font_text).pack(fill='both')
 
-
+# Function to open health card
 def newtop():
 
     def screenshots():
-
-        windows_list = []
-        toplist = []
-
-        def enum_win(hwnd, result):
-            win_text = win32gui.GetWindowText(hwnd)
-            windows_list.append((hwnd, win_text))
-            # print(hwnd,win_text)
-        win32gui.EnumWindows(enum_win, toplist)
-
-        game_hwnd = 0
-        for hwnd, win_text in windows_list:
-            if "Health Card" in win_text:
-                game_hwnd = hwnd
-
-        position = win32gui.GetWindowRect(game_hwnd)
-        # print(position)
-
-        screenshot = ImageGrab.grab(position)
-        #screenshot.save(f'Health card of {e1.get()}.png')
-        screenshot.show()
+        win = gw.getWindowsWithTitle('Health Card')[0]
+        winleft = win.left+9
+        wintop = win.top+38
+        winright = win.right-9
+        winbottom = win.bottom-9
+        final_rect = (winleft,wintop,winright,winbottom)
+        card_img = ImageGrab.grab(final_rect)
+        card_img.save(f'Health card of {e1.get()}.png')
         messagebox.showinfo(
-            'Success', 'Image of Health Card has been saved successfully.')
+            'Success', 'Image of Health Card has been saved successfully.',parent=new)
 
     if path == "":
         messagebox.showerror(
-            'Choose Image', 'Please choose an image to see the health card')
+            'Choose Image', 'Please choose an image to see the health card',parent=root)
 
     else:
         try:
             dat = cal.selection_get()
             if e1.get() == "" or e2.get() == "" or e3.get() == "" or g.get() == "" or b.get() == "":
                 messagebox.showerror(
-                    'Fill all', 'Make sure to fill all fields, including date')
+                    'Fill all', 'Make sure to fill all fields, including date',parent=root)
             else:
                 global new
                 global img
                 global img_prof
                 new = Toplevel(root)
+                new.resizable(False,False)
+                new.focus_force()
                 new.title('Health Card')
                 new.iconbitmap('Image/icn_1.ico')
+                new.geometry('+550+70')
                 mainfiledir = Image.open('Image/ID Card.png')
                 img = ImageTk.PhotoImage(mainfiledir)
                 img_label = Label(new, image=img)
@@ -612,41 +719,42 @@ def newtop():
 
                 # Placing Labels in grid
                 lo1 = Label(new, text=e1.get(), bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=330, y=126)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=330, y=128)
                 lo2 = Label(new, text=e2.get(), bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=345, y=156)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=345, y=158)
                 lo3 = Label(new, text=e3.get(), bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=315, y=184)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=315, y=186)
                 lo4 = Label(new, text=g.get(), bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=163, y=225)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=163, y=227)
                 lo5 = Label(new, text=b.get(), bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=220, y=256)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=220, y=258)
                 lo6 = Label(new, text=dat, bg='white',
-                            font=Font(family='Times', size='14', weight='bold')).place(x=220, y=286)
+                            font=Font(family='Times', size='14', weight='bold')).place(x=220, y=288)
                 btn = ttk.Button(new, text='Save Card',
-                                 command=screenshots).place(x=495, y=350)
+                                 command=screenshots)
+                btn.place(x=495, y=350)
 
         except:
             messagebox.showerror(
-                'Fill all', 'Make sure to fill all fields, including date')
+                'Fill all', 'Make sure to fill all fields, including date',parent=root)
 
-
+# Function to get the imagepath from filedialog
 def imgpath():
     # Defining image path
     global path
     path = filedialog.askopenfilename(
         initialdir='/Downloads', title='Select Photo', filetypes=(('JPEG files', '*.jpg'), ('PNG files', '*.png')))
 
-
+# Function to open exit messagebox
 def popup():
     # Defining exit
-    selection = messagebox.askyesno('Exit', 'Are you sure you want to exit?')
+    selection = messagebox.askyesno('Exit', 'Are you sure you want to exit?',parent=root)
     if selection == 1:
         root.destroy()
     else:
         Label(root, text="")
 
-
+# Function to display about section
 def about():
     # Defining Urls
     url = "https://nihaalnz.herokuapp.com"
@@ -660,13 +768,16 @@ def about():
 
     # Define about section
     about = Toplevel(root)
+    about.resizable(False,False)
     about.title('About')
+    about.focus_force()
+    about.iconbitmap('Image/icn_6.ico')
     about.geometry('300x300')
     # Making frames
     frame = LabelFrame(about, text='About this program', padx=5, pady=5)
     # Making frame items
     l_name = Label(frame, text='Created by Nihaal Nz')
-    l_ver = Label(frame, text='Ver : 3.00')
+    l_ver = Label(frame, text='Ver : 4.00')
     l_lic = Label(frame, text='Licensed under MIT')
     btn_sup = ttk.Button(frame, text='Website!', command=openweb)
     btn_cod = ttk.Button(frame, text='Source Code', command=openweb_2)
@@ -680,11 +791,11 @@ def about():
     btn_cod.grid(row=4, columnspan=2, sticky=E+W, pady=5)
     btn_cls.grid(row=5, columnspan=2, sticky=E+W)
 
-
+# Function to reset all fields
 def reset():
     # Defining Reset
     select = messagebox.askyesno(
-        'Reset', 'Are you sure you want to reset all boxes?')
+        'Reset', 'Are you sure you want to reset all boxes?',parent=root)
     if select == 1:
         e1.delete(0, END)
         e2.delete(0, END)
@@ -792,10 +903,10 @@ e6.grid(row=9, column=1, pady=5, ipady=5, padx=5)
 
 # Placing Button
 b_ch.grid(row=10, column=1, sticky=E+W, pady=5, padx=5)
-b_id.grid(row=11, column=0, sticky=E+W, padx=10, pady=5)
+b_id.grid(row=11, column=0, sticky=E+W, padx=30, pady=5)
 b_db.grid(row=11, column=1, sticky=E+W, padx=5, pady=5)
 b_ex.grid(row=13, columnspan=3, sticky=E+W, pady=(10, 0), ipady=3)
-b_re.grid(row=12, column=0, sticky=E+W, padx=10, pady=5)
+b_re.grid(row=12, column=0, sticky=E+W, padx=30, pady=5)
 b_dt.grid(row=5, column=1, sticky=E+W, padx=7, pady=5, ipadx=5)
 b_mng.grid(row=12, column=1, sticky=E+W, padx=5, pady=5)
 
@@ -803,6 +914,76 @@ b_mng.grid(row=12, column=1, sticky=E+W, padx=5, pady=5)
 opt_g.grid(row=4, column=1, ipadx=6, pady=3)
 opt_blo.grid(row=7, column=1, padx=5, ipadx=10)
 opt_cov.grid(row=8, column=1, ipadx=12, pady=5)
+
+# Creating ? icons
+q_mark = Image.open('Image/question_mark.png')
+q_mark_re = q_mark.resize((15, 15), Image.ANTIALIAS)
+q_mark_new = ImageTk.PhotoImage(q_mark_re)
+
+# Making 13 ? icons
+q_mark_1 = Label(root, image=q_mark_new)
+q_mark_1.grid(row=0, column=2, padx=(0, 10))
+q_mark_2 = Label(root, image=q_mark_new)
+q_mark_2.grid(row=1, column=2, padx=(0, 10))
+q_mark_3 = Label(root, image=q_mark_new)
+q_mark_3.grid(row=2, column=2, padx=(0, 10))
+q_mark_4 = Label(root, image=q_mark_new)
+q_mark_4.grid(row=3, column=2, padx=(0, 10))
+q_mark_5 = Label(root, image=q_mark_new)
+q_mark_5.grid(row=4, column=2, padx=(0, 10))
+q_mark_6 = Label(root, image=q_mark_new)
+q_mark_6.grid(row=5, column=2, padx=(0, 10))
+q_mark_7 = Label(root, image=q_mark_new)
+q_mark_7.grid(row=6, column=2, padx=(0, 10))
+q_mark_8 = Label(root, image=q_mark_new)
+q_mark_8.grid(row=7, column=2, padx=(0, 10))
+q_mark_9 = Label(root, image=q_mark_new)
+q_mark_9.grid(row=8, column=2, padx=(0, 10))
+q_mark_10 = Label(root, image=q_mark_new)
+q_mark_10.grid(row=9, column=2, padx=(0, 10))
+q_mark_11 = Label(root, image=q_mark_new)
+q_mark_11.grid(row=10, column=2, padx=(0, 10))
+q_mark_12 = Label(root, image=q_mark_new)
+q_mark_12.grid(row=11, column=2, padx=(0, 10))
+q_mark_13 = Label(root, image=q_mark_new)
+q_mark_13.grid(row=12, column=2, padx=(0, 10))
+q_mark_14 = Label(root, image=q_mark_new)
+q_mark_14.grid(row=11, column=0, padx=(0, 10),sticky=E)
+q_mark_15 = Label(root, image=q_mark_new)
+q_mark_15.grid(row=12, column=0, padx=(0, 10),sticky=E)
+
+# Creating a tooltip for each ? icon
+nametooltip_1 = Pmw.Balloon(root)
+nametooltip_1.bind(q_mark_1, 'Name:\nEnter a valid full name')
+nametooltip_2 = Pmw.Balloon(root)
+nametooltip_2.bind(q_mark_2, 'Phone Number:\nEnter a phone number less than 11 digits')
+nametooltip_3 = Pmw.Balloon(root)
+nametooltip_3.bind(q_mark_3, 'Emirates ID:\nEnter Emirates ID less than 16 digits')
+nametooltip_4 = Pmw.Balloon(root)
+nametooltip_4.bind(q_mark_4, 'Email Address:\nEnter a valid email address')
+nametooltip_5 = Pmw.Balloon(root)
+nametooltip_5.bind(q_mark_5, 'Gender:\nChoose Gender from the dropdown box')
+nametooltip_6 = Pmw.Balloon(root)
+nametooltip_6.bind(q_mark_6, 'Date of Birth:\nPick Date of Birth from the box ')
+nametooltip_7 = Pmw.Balloon(root)
+nametooltip_7.bind(q_mark_7, 'Nationality:\nEnter your nationality')
+nametooltip_8 = Pmw.Balloon(root)
+nametooltip_8.bind(q_mark_8, 'Blood Group:\nChoose your blood group from the dropdown box')
+nametooltip_9 = Pmw.Balloon(root)
+nametooltip_9.bind(q_mark_9, 'COVID result:\nChoose a suitable option\nYes - If tested positive\nNo - If tested negative\nN/A - If hadnt done a test yet')
+nametooltip_10 = Pmw.Balloon(root)
+nametooltip_10.bind(q_mark_10, 'Emergency Number:\nEnter a number to be contacted in cases of emergency')
+nametooltip_11 = Pmw.Balloon(root)
+nametooltip_11.bind(q_mark_11, 'Select a photo:\nClick to provide a photo for the health card')
+nametooltip_12 = Pmw.Balloon(root)
+nametooltip_12.bind(q_mark_12, 'Submit the data:\nClick to enter the data into the database')
+nametooltip_13 = Pmw.Balloon(root)
+nametooltip_13.bind(q_mark_13, 'Manage:\nClick to open administration panel')
+nametooltip_14 = Pmw.Balloon(root)
+nametooltip_14.bind(q_mark_14, 'Make a health card:\nClick to create health card with the given data')
+nametooltip_15 = Pmw.Balloon(root)
+nametooltip_15.bind(q_mark_15, 'Reset:\nClick to clear all the fields')
+
 
 # Ending program
 root.mainloop()

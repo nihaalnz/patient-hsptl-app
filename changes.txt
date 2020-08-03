@@ -14,7 +14,12 @@
 
 -Ver 3.00
     -Added security for admin panel.
-    -Fixed some major and minor bugs.
+    -Fixed major and minor bugs.
     -Better logic.
+
+-Ver 4.00
+    -Added helping tooltips beside input boxes 
+    -Fixed major bugs
+    -Reduced network traffic
     
     
