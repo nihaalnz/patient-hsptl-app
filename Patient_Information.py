@@ -12,10 +12,9 @@ from tkinter import ttk
 from ttkthemes import themed_tk as tktheme
 import webbrowser
 import pygetwindow as gw
-import win32gui
 import os
 import Pmw
-
+import widgets as ctk
 
 # Main Window
 #root = Tk()
@@ -25,11 +24,10 @@ root = tktheme.ThemedTk()
 root.focus_force()
 root.resizable(False,False)
 Pmw.initialise(root)
-root.get_themes()
-root.set_theme('vista')
+root.set_theme('arc')
 root.title('Patient Information')
 root.geometry('+110+70')
-root.iconbitmap('icon.ico')
+root.iconbitmap('Image/icon.ico')
 font_text = Font(family='helvetica', size='11')
 font_button = Font(size='10')
 
@@ -43,15 +41,15 @@ cov = ['Yes', 'No', 'N/A']
 
 # Function to enter value into database
 def database():
-
+    
     try:
         # Defining Variables for db
         nme = name.get()
-        p_h = ph.get()
+        p_h = e2.get()
         eid = e_id.get()
         ema_id = em_id.get()
         nat = nation.get()
-        emer = emerg.get()
+        emer = e6.get()
         gend = g.get()
         bloo = b.get()
         covi = co.get()
@@ -62,34 +60,39 @@ def database():
             messagebox.showinfo('Fill all', 'All fields are necessary',parent=root)
 
         else:
-            # Establishing connection
-            con = mysql.connect(host='', user='',
-                                password='', database='')
+            choice = messagebox.askyesno('Do you want to continue','Are you sure you want to enter the data into the database?')
+            if choice:
+                # Establishing connection
+                con = mysql.connect(host='', user='',
+                                    password='', database='')
 
-            # Making SQL command
-            sql_command = "INSERT into patient_infos (`Full Name`,`Phone Number`,`Emirates ID`,`Email Address`,`Gender`,`Date of Birth`,`Nationality`,`Blood Group`,`COVID result`,`Emergency Number`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-            values = (nme, p_h, eid, ema_id, gend, str(
-                dat), nat, str(bloo), str(covi), emer)
-            # Defining cursor
-            c = con.cursor()
-            # Executing and saving SQL command
-            c.execute(sql_command, values)
-            c.execute('commit')
-            # Closing the connection
-            con.close()
-            # Success message
-            messagebox.showinfo(
-                'Success', 'All values have been entered to the database',parent=root)
-            # Reseting all the boxes
-            e1.delete(0, END)
-            e2.delete(0, END)
-            e3.delete(0, END)
-            e4.delete(0, END)
-            e5.delete(0, END)
-            e6.delete(0, END)
+                # Making SQL command
+                sql_command = "INSERT into patient_infos (`Full Name`,`Phone Number`,`Emirates ID`,`Email Address`,`Gender`,`Date of Birth`,`Nationality`,`Blood Group`,`COVID result`,`Emergency Number`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+                values = (nme, p_h, eid, ema_id, gend, str(
+                    dat), nat, str(bloo), str(covi), emer)
+                # Defining cursor
+                c = con.cursor()
+                # Executing and saving SQL command
+                c.execute(sql_command, values)
+                c.execute('commit')
+                # Closing the connection
+                con.close()
+                # Success message
+                messagebox.showinfo(
+                    'Success', 'All data has been stored to the database',parent=root)
+                # Reseting all the boxes
+                e1.delete(0, END)
+                e2.delete(0, END)
+                e3.delete(0, END)
+                e4.delete(0, END)
+                e5.delete(0, END)
+                e6.delete(0, END)
+            
+            else:
+                pass
 
     except:
-        messagebox.showinfo(
+        messagebox.showerror(
             'Fill all', 'Make sure to fil all fields including date',parent=root)
 
 # Function to get access to admin panel
@@ -144,8 +147,8 @@ def manage():
 
                 # Defining error actions
                 if values == "":
-                    messagebox.showinfo(
-                        'No value!', 'Please enter data in the box',parent=update)
+                    messagebox.showerror(
+                        'No value!', 'Please enter a valid id in the box',parent=update)
 
                 else:
                     # Establishing connection
@@ -160,7 +163,7 @@ def manage():
 
                     # Describing empty actions
                     if records == []:
-                        messagebox.showinfo('Does not exist!',
+                        messagebox.showerror('Does not exist!',
                                             'Sorry such patient does not exist',parent=update)
 
                     else:
@@ -178,27 +181,32 @@ def manage():
                                 messagebox.showerror('Fill all blanks','Make sure to fill all the data and leave nothing empty',parent=manage)
                             
                             else:
-                                con = mysql.connect(host='', user='',
-                                                    password='', database='')
-                                # Making SQL command
-                                sql_command = "UPDATE patient_infos set `Full Name`=%s ,`Phone Number`=%s,`Emirates ID`=%s,`Email Address`=%s,`Gender`=%s,`Date of Birth`=%s,`Nationality`=%s,`Blood Group`=%s,`COVID result`=%s,`Emergency Number`=%s where `Sl.no.` = %s ;"
-                                values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
-                                ), e_dt.get(), e50.get(), b.get(), co.get(), e60.get(), e_i_d.get()
-                                c = con.cursor()
-                                # Executing and saving SQL command
-                                c.execute(sql_command, values)
-                                c.execute('commit')
+                                choice = messagebox.askyesno('Are you sure','Are you sure you want to update the data?',parent=manage)
+                                if choice:
+                                    con = mysql.connect(host='', user='',
+                                                        password='', database='')
+                                    # Making SQL command
+                                    sql_command = "UPDATE patient_infos set `Full Name`=%s ,`Phone Number`=%s,`Emirates ID`=%s,`Email Address`=%s,`Gender`=%s,`Date of Birth`=%s,`Nationality`=%s,`Blood Group`=%s,`COVID result`=%s,`Emergency Number`=%s where `Sl.no.` = %s ;"
+                                    values = e10.get(), e20.get(), e30.get(), e40.get(), g.get(
+                                    ), e_dt.get(), e50.get(), b.get(), co.get(), e60.get(), e_i_d.get()
+                                    c = con.cursor()
+                                    # Executing and saving SQL command
+                                    c.execute(sql_command, values)
+                                    c.execute('commit')
 
-                                # Display sucess message
-                                messagebox.showinfo(
-                                    'Done', 'The data has been successfully updated.',parent=manage)
+                                    # Display sucess message
+                                    messagebox.showinfo(
+                                        'Done', 'The data has been successfully updated.',parent=manage)
 
-                                # Clearing entry box
-                                e_i_d.delete(0, END)
+                                    # Clearing entry box
+                                    e_i_d.delete(0, END)
 
-                                # Closing the window automatically
-                                con.close()
-                                manage.destroy()
+                                    # Closing the window automatically
+                                    con.close()
+                                    manage.destroy()
+                                
+                                else:
+                                    pass
 
                         # Defining Labels
                         l_head = Label(manage, text='Edit',
@@ -225,11 +233,11 @@ def manage():
 
                         # Defining Entry boxes and button
                         e10 = ttk.Entry(manage)
-                        e20 = ttk.Entry(manage)
+                        e20 = ctk.FormEntry(manage, pformat)
                         e30 = ttk.Entry(manage)
                         e40 = ttk.Entry(manage)
                         e50 = ttk.Entry(manage)
-                        e60 = ttk.Entry(manage)
+                        e60 = ctk.FormEntry(manage, pformat)
                         e_dt = ttk.Entry(manage)
                         b_cls = ttk.Button(manage, text='Close',
                                            command=manage.destroy)
@@ -237,27 +245,27 @@ def manage():
                             manage, text='Update Data', command=edit)
 
                         main = records[0]
-
+                        
                         # Defining Dropdowns
                         g = StringVar()
                         g.set(main[5])
-                        opt_g = OptionMenu(manage, g, *gen)
+                        opt_g = ttk.OptionMenu(manage, g,None, *gen)
 
                         b = StringVar()
                         b.set(main[8])
-                        opt_blo = OptionMenu(manage, b, *bl_gr)
+                        opt_blo = ttk.OptionMenu(manage, b,None, *bl_gr)
 
                         co = StringVar()
                         co.set(main[9])
-                        opt_cov = OptionMenu(manage, co, *cov)
+                        opt_cov = ttk.OptionMenu(manage, co,None, *cov)
 
                         # Placing entry boxes on screen
                         e10.grid(row=1, column=1, pady=5, ipady=5, padx=5)
-                        e20.grid(row=1, column=4, pady=5, ipady=5, padx=5)
+                        e20.grid(row=1, column=4)
                         e30.grid(row=2, column=1, pady=5, ipady=5, padx=5)
                         e40.grid(row=2, column=4, pady=5, ipady=5, padx=5)
                         e50.grid(row=3, column=1, pady=6, ipady=5, padx=5)
-                        e60.grid(row=3, column=4, pady=5, ipady=5, padx=5)
+                        e60.grid(row=3, column=4)
 
                         # Inserting results on to boxes
                         for record in records:
@@ -420,6 +428,8 @@ def manage():
                                             font=font_text)
                                 btn_ext = Button(result_win, text='Exit', font=font_text,
                                                 command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
+                                status = Label(result_win,text=f'Total records fetched: {len(records)}',bd=1,relief=SUNKEN,anchor=W)
+                                status.grid(row=index+2,columnspan=11,sticky=E+W)
 
                                 # Placing it in screen
                                 l_1.grid(row=0, column=0, padx=20)
@@ -433,7 +443,7 @@ def manage():
                                 l_9.grid(row=0, column=8, padx=20)
                                 l_10.grid(row=0, column=9, padx=20)
                                 l_11.grid(row=0, column=10, padx=20)
-                                btn_ext.grid(row=index+2, columnspan=11,
+                                btn_ext.grid(row=index+3, columnspan=11,
                                             ipadx=240, sticky=E+W)
                                 e_1.delete(0,END)
 
@@ -443,84 +453,87 @@ def manage():
                             messagebox.showerror('Fill in the blank','Make sure to fill the blank',parent=sp_pat)
                         
                         else:
-                            
-                            # Establishing connection
                             con = mysql.connect(host='', user='',
                                                 password='', database='')
-                            # Making SQL command
+                            # fetch data
                             sql_command = "SELECT * FROM patient_infos where `{}` regexp %s;"
                             sql_command = sql_command.format(a)
                             # Executing and saving SQL command
                             c = con.cursor()
                             c.execute(sql_command, (e_1.get(),))
-                            records = c.fetchall()
+                            results = c.fetchall()
                             
-
-                            # Declaring null actions
-                            if records == []:
-                                messagebox.showinfo('Does not exist!',
-                                                    'Sorry such patient does not exist',parent=sp_pat)
-                                e_1.delete(0,END)
+                            if results == []:
+                                messagebox.showerror('No data to display','Sorry, such patient data not found',parent=sp_pat)
                             
                             else:
-                                # Creating window
-                                result_win = Toplevel(sp_pat)
-                                result_win.resizable(False,False)
-                                result_win.title('Search result')
-                                result_win.geometry('+110+350')
-                                result_win.focus_force()
-                                result_win.iconbitmap('Image/icn_3.ico')
+                                # Making a new window
+                                all_pat = Toplevel(update)
+                                all_pat.resizable(False,False)
+                                all_pat.focus_force()
+                                all_pat.iconbitmap('Image/icn_3.ico')
+                                all_pat.geometry('+110+70')
 
-                                # Looping and placing in systematic order
-                                index = 0
-                                for index, x in enumerate(records):
-                                    num = 0
-                                    for y in x:
-                                        lookup_label = Label(result_win, text=y)
-                                        lookup_label.grid(row=index+1, column=num)
-                                        num += 1
-                                # Closing connection
+                                # setup treeview
+                                columns = (('ID', 50), ("Full Name", 150), ("Ph No.", 100), ("Emirates ID", 100), ("Email Addr.", 180),
+                                        ("Gender", 70), ("DOB", 100), ('Nationality', 80), ('B Grp', 60), ("COVID Test", 60), ("Emergency No.", 100))
+                                tree = ttk.Treeview(all_pat, height=20, columns=[
+                                                    x[0] for x in columns], show='headings')
+                                tree.grid(row=0, column=0, sticky='news')
+
+                                # setup columns attributes
+                                for col, width in columns:
+                                    tree.heading(col, text=col)
+                                    tree.column(col, width=width, anchor=tk.CENTER)
+
+                                                            # Establishing connection
+                                con = mysql.connect(host='', user='',
+                                                    password='', database='')
+                                # fetch data
+                                sql_command = "SELECT * FROM patient_infos where `{}` regexp %s;"
+                                sql_command = sql_command.format(a)
+                                # Executing and saving SQL command
+                                c = con.cursor()
+                                c.execute(sql_command, (e_1.get(),))
+                                results = c.fetchall()
+
+                                # populate data to treeview
+                                for rec in results:
+                                    tree.insert('', 'end', value=rec)
+                                
+                                def pop_menu(event):
+                                    global column
+                                    tree.identify_row(event.y)
+                                    column = tree.identify_column(event.x)
+                                    popup1.post(event.x_root,event.y_root)
+
+                                def copy():
+                                    row_id = tree.selection()[0]
+                                    column_no = column
+                                    select = tree.set(row_id,column_no)
+                                    all_pat.clipboard_clear()
+                                    all_pat.clipboard_append(select)
+                                    all_pat.update()
+                                    
+                                popup1 = Menu(tree,tearoff=0)
+                                popup1.add_command(label='Copy',command=copy)
+
+                                tree.bind('<Button-3>',pop_menu)
+
+                                # scrollbar
+                                sb = tk.Scrollbar(all_pat, orient=tk.VERTICAL,
+                                                command=tree.yview)
+                                sb.grid(row=0, column=1, sticky='ns')
+                                tree.config(yscrollcommand=sb.set)
+                                a = tree.item(tree.focus())['values']
+
+                                btn = ttk.Button(all_pat, text='Close',
+                                                command=all_pat.destroy)
+                                btn.grid(row=2, column=0, columnspan=2, sticky=E+W)
+                                status = Label(all_pat,text=f'Total records fetched: {len(results)}',bd=1,relief=SUNKEN,anchor=W)
+                                status.grid(row=1,columnspan=2,sticky=E+W)
+
                                 con.close()
-
-                                # Creating column headers and exit button
-                                l_1 = Label(result_win, text='ID', font=font_text)
-                                l_2 = Label(
-                                    result_win, text='Full Name', font=font_text)
-                                l_3 = Label(
-                                    result_win, text='Phone no.', font=font_text)
-                                l_4 = Label(
-                                    result_win, text='Emirates ID', font=font_text)
-                                l_5 = Label(
-                                    result_win, text='Email addr.', font=font_text)
-                                l_6 = Label(result_win, text='Gender',
-                                            font=font_text)
-                                l_7 = Label(result_win, text='DOB', font=font_text)
-                                l_8 = Label(
-                                    result_win, text='Nationality', font=font_text)
-                                l_9 = Label(
-                                    result_win, text='Blood group', font=font_text)
-                                l_10 = Label(
-                                    result_win, text='COVID test', font=font_text)
-                                l_11 = Label(result_win, text='Emergency no.',
-                                            font=font_text)
-                                btn_ext = Button(result_win, text='Exit', font=font_text,
-                                                command=result_win.destroy, borderwidth=2, fg='#eb4d4b')
-
-                                # Placing it on screen
-                                l_1.grid(row=0, column=0, padx=20)
-                                l_2.grid(row=0, column=1, padx=20)
-                                l_3.grid(row=0, column=2, padx=20)
-                                l_4.grid(row=0, column=3, padx=20)
-                                l_5.grid(row=0, column=4, padx=20)
-                                l_6.grid(row=0, column=5, padx=20)
-                                l_7.grid(row=0, column=6, padx=20)
-                                l_8.grid(row=0, column=7, padx=20)
-                                l_9.grid(row=0, column=8, padx=20)
-                                l_10.grid(row=0, column=9, padx=20)
-                                l_11.grid(row=0, column=10, padx=20)
-                                btn_ext.grid(row=index+2, columnspan=11,
-                                            ipadx=240, sticky=E+W)
-                                e_1.delete(0,END)
 
                     else:
                         # Error message
@@ -531,12 +544,12 @@ def manage():
                 drops = ttk.Combobox(sp_pat, value=['Search by...', 'Sl.no.', 'Full Name', 'Phone Number', 'Emirates ID', 'Email Address',
                                                     'Gender', 'Date of Birth', 'Nationality', 'Blood Group', 'COVID result', 'Emergency Number'], state='readonly')
                 drops.current(0)
-                e_1 = Entry(sp_pat)
+                e_1 = ttk.Entry(sp_pat)
                 e_1.focus_force()
 
                 # Defining Labels and search button
                 l_sch = Label(sp_pat, text='Search', font=Font(size='20'))
-                l_id = Label(sp_pat, text='Enter', font=font_text)
+                l_id = ttk.Label(sp_pat, text='Enter', font=font_text)
                 bt_db = ttk.Button(sp_pat, text='Search', command=search)
 
                 # Placing it in screen
@@ -584,10 +597,30 @@ def manage():
                                     password='', database='')
                 c = con.cursor()
                 c.execute('SELECT * FROM patient_infos')
-
+                results = c.fetchall()
+                
                 # populate data to treeview
-                for rec in c:
+                for rec in results:
                     tree.insert('', 'end', value=rec)
+                
+                def pop_menu(event):
+                    global column
+                    tree.identify_row(event.y)
+                    column = tree.identify_column(event.x)
+                    popup1.post(event.x_root,event.y_root)
+
+                def copy():
+                    row_id = tree.selection()[0]
+                    column_no = column
+                    select = tree.set(row_id,column_no)
+                    all_pat.clipboard_clear()
+                    all_pat.clipboard_append(select)
+                    all_pat.update()
+                    
+                popup1 = Menu(tree,tearoff=0)
+                popup1.add_command(label='Copy',command=copy)
+
+                tree.bind('<Button-3>',pop_menu)
 
                 # scrollbar
                 sb = tk.Scrollbar(all_pat, orient=tk.VERTICAL,
@@ -598,7 +631,10 @@ def manage():
 
                 btn = ttk.Button(all_pat, text='Close',
                                  command=all_pat.destroy)
-                btn.grid(row=1, column=0, columnspan=2, sticky=E+W)
+                btn.grid(row=2, column=0, columnspan=2, sticky=E+W)
+                status = Label(all_pat,text=f'Total records fetched: {len(results)}',bd=1,relief=SUNKEN,anchor=W)
+                status.grid(row=1,columnspan=2,sticky=E+W)
+
                 con.close()
 
             # Defining buttons and placing them
@@ -640,6 +676,9 @@ def manage():
     b.bind("<Return>", login)
     e2.bind("<Return>", login)
     e1.focus_force()
+    if counter:
+        b['state'] = DISABLED
+        e2.unbind('<Return>')
     l.grid(column=0, row=0, padx=(150,0), pady=(120, 15))
     l2.grid(column=0, row=1,columnspan=2)
     l3.grid(column=0, row=3,columnspan=2)
@@ -669,12 +708,15 @@ def datepicker():
     cal = Calendar(top, font="Arial 14", selectmode='day',
                    year=2006, month=9, day=1)
     cal.pack(fill="both", expand=True)
-    Button(top, text="OK", command=top.destroy,
-           font=font_text).pack(fill='both')
+    ttk.Button(top, text="OK", command=top.destroy).pack(fill='both')
 
 # Function to open health card
 def newtop():
-
+    
+    def hide():
+        btn.place_forget()
+        new.after(1000,screenshots)
+    
     def screenshots():
         win = gw.getWindowsWithTitle('Health Card')[0]
         winleft = win.left+9
@@ -683,9 +725,11 @@ def newtop():
         winbottom = win.bottom-9
         final_rect = (winleft,wintop,winright,winbottom)
         card_img = ImageGrab.grab(final_rect)
-        card_img.save(f'Health card of {e1.get()}.png')
+        location = filedialog.askdirectory(initialdir='c:/',parent=new,title='Choose location to save')
+        card_img.save(location+f'/Health card of {e1.get()}.png')
         messagebox.showinfo(
             'Success', 'Image of Health Card has been saved successfully.',parent=new)
+        btn.place(x=495, y=350)
 
     if path == "":
         messagebox.showerror(
@@ -697,6 +741,7 @@ def newtop():
             if e1.get() == "" or e2.get() == "" or e3.get() == "" or g.get() == "" or b.get() == "":
                 messagebox.showerror(
                     'Fill all', 'Make sure to fill all fields, including date',parent=root)
+            
             else:
                 global new
                 global img
@@ -712,7 +757,7 @@ def newtop():
                 img_label = Label(new, image=img)
                 img_label.grid(row=1, column=2)
                 dir = Image.open(path)
-                dir = dir.resize((150, 150), Image.ANTIALIAS)
+                dir = dir.resize((150, 150),  )
                 img_prof = ImageTk.PhotoImage(dir)
                 img_label = Label(new, image=img_prof)
                 img_label.place(x=500, y=150)
@@ -731,7 +776,7 @@ def newtop():
                 lo6 = Label(new, text=dat, bg='white',
                             font=Font(family='Times', size='14', weight='bold')).place(x=220, y=288)
                 btn = ttk.Button(new, text='Save Card',
-                                 command=screenshots)
+                                 command=hide)
                 btn.place(x=495, y=350)
 
         except:
@@ -751,6 +796,7 @@ def popup():
     selection = messagebox.askyesno('Exit', 'Are you sure you want to exit?',parent=root)
     if selection == 1:
         root.destroy()
+    
     else:
         Label(root, text="")
 
@@ -777,7 +823,7 @@ def about():
     frame = LabelFrame(about, text='About this program', padx=5, pady=5)
     # Making frame items
     l_name = Label(frame, text='Created by Nihaal Nz')
-    l_ver = Label(frame, text='Ver : 4.00')
+    l_ver = Label(frame, text='Ver : 5.00')
     l_lic = Label(frame, text='Licensed under MIT')
     btn_sup = ttk.Button(frame, text='Website!', command=openweb)
     btn_cod = ttk.Button(frame, text='Source Code', command=openweb_2)
@@ -795,16 +841,18 @@ def about():
 def reset():
     # Defining Reset
     select = messagebox.askyesno(
-        'Reset', 'Are you sure you want to reset all boxes?',parent=root)
-    if select == 1:
+        'Reset', 'Are you sure you want to reset all the boxes?',parent=root)
+    
+    if select:
         e1.delete(0, END)
         e2.delete(0, END)
         e3.delete(0, END)
         e4.delete(0, END)
         e5.delete(0, END)
         e6.delete(0, END)
+    
     else:
-        Label(root, text="")
+        pass
 
 
 # Define menu
@@ -822,33 +870,33 @@ file_menu.add_command(label='Reset', command=reset)
 file_menu.add_command(label='Exit', command=popup)
 
 # Defining Labels
-l1 = ttk.Label(root, text='Name', font=font_text)
-l2 = ttk.Label(root, text='Phone Number', font=font_text)
-l3 = ttk.Label(root, text='Emirates ID', font=font_text)
-l4 = ttk.Label(root, text='Email Address', font=font_text)
-l5 = ttk.Label(root, text='Gender', font=font_text)
-l6 = ttk.Label(root, text='Date Of Birth', font=font_text)
-l7 = ttk.Label(root, text='Nationality', font=font_text)
-l8 = ttk.Label(root, text='Blood Group', font=font_text)
-l9 = ttk.Label(root, text='Test for COVID-19', font=font_text)
-l10 = ttk.Label(root, text='Emergency Contact Number', font=font_text)
-l11 = ttk.Label(root, text='Select Photo', font=font_text)
+l1 = Label(root, text='Name', font=font_text,background='#f0f0f0')
+l2 = Label(root, text='Phone Number', font=font_text,background='#f0f0f0')
+l3 = Label(root, text='Emirates ID', font=font_text,background='#f0f0f0')
+l4 = Label(root, text='Email Address', font=font_text,background='#f0f0f0')
+l5 = Label(root, text='Gender', font=font_text,background='#f0f0f0')
+l6 = Label(root, text='Date Of Birth', font=font_text,background='#f0f0f0')
+l7 = Label(root, text='Nationality', font=font_text,background='#f0f0f0')
+l8 = Label(root, text='Blood Group', font=font_text,background='#f0f0f0')
+l9 = Label(root, text='Test for COVID-19', font=font_text,background='#f0f0f0')
+l10 = Label(root, text='Emergency Contact Number', font=font_text,background='#f0f0f0')
+l11 = Label(root, text='Select Photo', font=font_text,background='#f0f0f0')
 
 # Defining variables
 name = StringVar()
-ph = StringVar()
 e_id = StringVar()
 em_id = StringVar()
 nation = StringVar()
-emerg = StringVar()
+
+pformat = ctk.PhoneFormat2
 
 # Defining Entry widget
 e1 = ttk.Entry(root, textvariable=name)
-e2 = ttk.Entry(root, textvariable=ph)
+e2 = ctk.FormEntry(root, pformat)
 e3 = ttk.Entry(root, textvariable=e_id)
 e4 = ttk.Entry(root, textvariable=em_id)
 e5 = ttk.Entry(root, textvariable=nation)
-e6 = ttk.Entry(root, textvariable=emerg)
+e6 = ctk.FormEntry(root, pformat)
 
 # Defining Buttons
 b_ch = ttk.Button(root, text='Select Image', command=imgpath)
@@ -861,24 +909,15 @@ b_mng = ttk.Button(root, text='Manage', command=manage)
 
 # Defining Gender Dropdown
 g = StringVar()
-g.set('Choose Gender')
-opt_g = OptionMenu(root, g, *gen)
-men = opt_g.nametowidget(opt_g.menuname)
-men.configure(font=font_button)
+opt_g = ttk.OptionMenu(root, g,'Choose Gender', *gen)
 
 # Defining Blood Dropdown
 b = StringVar()
-b.set('Choose group')
-opt_blo = OptionMenu(root, b, *bl_gr)
-optu = opt_blo.nametowidget(opt_blo.menuname)
-optu.configure(font=font_button)
+opt_blo = ttk.OptionMenu(root, b,'Choose group', *bl_gr)
 
 # Defining COVID Dropdown
 co = StringVar()
-co.set('Choose result')
-opt_cov = OptionMenu(root, co, *cov)
-opti = opt_cov.nametowidget(opt_cov.menuname)
-opti.configure(font=font_button)
+opt_cov = ttk.OptionMenu(root, co,'Choose result', *cov)
 
 # Placing Lables
 l1.grid(row=0, column=0, padx=10)
@@ -983,6 +1022,24 @@ nametooltip_14 = Pmw.Balloon(root)
 nametooltip_14.bind(q_mark_14, 'Make a health card:\nClick to create health card with the given data')
 nametooltip_15 = Pmw.Balloon(root)
 nametooltip_15.bind(q_mark_15, 'Reset:\nClick to clear all the fields')
+
+root.protocol("WM_DELETE_WINDOW", popup)
+
+# Trying to establish database connection
+try:
+    con = mysql.connect(host='', user='',
+                    password='', database='')
+    counter = False
+
+except:
+    exit = messagebox.askyesno('Connection Failed','Connection with the database could not be established.\nWould you like to continue to use the app on offline mode?',parent=root)
+    if exit:
+        counter = True
+        b_db['state'] = DISABLED
+        b_mng['state'] = DISABLED
+    
+    else:
+        root.destroy()
 
 
 # Ending program

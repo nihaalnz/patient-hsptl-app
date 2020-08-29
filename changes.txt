@@ -22,4 +22,9 @@
     -Fixed major bugs
     -Reduced network traffic
     
+-Ver 4.00
+    -Updated offline mode for app
+    -Updated Treeview for admins
+    -Fixed efficiency
+    -Updated UI
     
