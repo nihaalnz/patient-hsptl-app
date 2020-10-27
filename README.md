@@ -1,16 +1,18 @@
-Github viewers
-  -NOTE THAT THE GITHUB VERSION DOES NOT HAVE A DATABASE CONNECTION CHOSEN.
-  -Open Source
+Hospital patient management system
+    - No database provided
+    - All used image files are included
+    - Plug in a similar database and run.
 
-FOR .EXE HOLDERS 
-  -Run Patient.exe 
-  -Be patient as it might take some time to load
-  -Add legitimate details only except for emirates id
-  -Make sure Emirates id is 7 numbers long 
-  -Make sure to use numbers only for phone number and emirates id 
-  -Make sure to fill all the boxes 
-  -Make sure to upload a picture to get Health Card 
-  -Make sure to enter the data to database, if no message box comes then make sure you have
-  entered the date correctly.
-  -Program might not respond after pressing enter database but please be patient and it will work again.
-  Thanks for using the software :)
+Database creation code:
+    Create table patient_infos(
+        `FULL NAME` VARCHAR(50+)
+        `PHONE NUMBER` VARCHAR(11)
+        `EMIRATES ID` VARCHAR(19)
+        `EMAIL ADDRESS`  VARCHAR(40)
+        `GENDER` VARCHAR(7)
+        `DATE OF BIRTH` VARCHAR(11)
+        `NATIONALITY` VARCHAR(20)
+        `BLOOD GROUP` VARCHAR(6)
+        `COVID RESULT` VARCHAR(4)
+        `EMERGENCY NUMBER` VARCHAR(11)
+        `REGISTRATION DATE VARCHAR(11))
