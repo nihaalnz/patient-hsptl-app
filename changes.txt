@@ -27,4 +27,11 @@
     -Updated Treeview for admins
     -Fixed efficiency
     -Updated UI
+
+-Ver 6.00
+    -Updated logic
+    -Faster database
+    -Fixed minor bugs
+    -Improved efficiency and user friendly
+    -New automatic column ~ 'Registration Date'
     
